@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>MediCare+ Hospital Appointment System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+*{box-sizing:border-box;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+:root{--primary:#7c3aed;--primary-dark:#5b21b6;--primary-light:#ede9fe;--bg:#fafafa;--card:#fff;--text:#111827;--muted:#6b7280;--border:#e5e7eb}
+body{margin:0;background:var(--bg);color:var(--text)}
+.hidden{display:none!important}
+
+/* HEADER */
+header{position:sticky;top:0;z-index:20;background:linear-gradient(90deg,#6d28d9,#a855f7);padding:12px 7vw;color:#fff;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 12px rgba(0,0,0,.18)}
+.brand{font-size:23px;font-weight:800}
+.brand span{color:#fefce8}
+.nav-buttons{display:flex;gap:8px;flex-wrap:wrap}
+.nav-btn,.btn-primary{border:none;border-radius:999px;padding:8px 16px;font-size:13px;cursor:pointer;transition:.2s}
+.nav-btn{color:#fff;background:rgba(255,255,255,.12)}
+.nav-btn:hover{background:rgba(255,255,255,.3)}
+.nav-btn.active{background:#fff;color:var(--primary-dark);font-weight:600}
+.btn-primary{width:100%;padding:11px;background:var(--primary);color:#fff;font-weight:600;box-shadow:0 6px 18px rgba(124,58,237,.45)}
+.btn-primary:hover{background:var(--primary-dark);transform:translateY(-1px)}
+
+/* PAGE + CARDS */
+.page{padding:24px 7vw 50px;background:rgba(255,255,255,.9);border-radius:16px;margin:20px}
+h1,h2,h3{margin-top:0;color:var(--primary-dark)}
+p{color:var(--muted)}
+.card{background:var(--card);border-radius:18px;padding:20px;box-shadow:0 8px 22px rgba(15,23,42,.08)}
+
+/* FORMS */
+label{display:block;margin-top:8px;font-size:13px;color:#4b5563}
+input,select,textarea{width:100%;padding:9px;border-radius:10px;border:1px solid var(--border);background:#fafafa;font-size:14px;transition:.2s}
+input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(124,58,237,.22);background:#fff}
+textarea{resize:vertical;min-height:70px}
+.error{color:#b91c1c;font-size:13px;margin-top:6px}
+.success{color:#15803d;font-size:13px;margin-top:6px}
+
+/* TABLES */
+table{width:100%;border-collapse:collapse;margin-top:10px;background:#fff;border-radius:14px;overflow:hidden;font-size:12px}
+th,td{padding:6px 8px;border-bottom:1px solid #e5e7eb;text-align:left}
+th{background:var(--primary-light);font-weight:600}
+.action-btn{border:none;border-radius:999px;padding:3px 7px;margin:0 2px;font-size:10px;cursor:pointer}
+.action-edit{background:#fde68a;color:#92400e}
+.action-del{background:#fecaca;color:#7f1d1d}
+.action-print{background:#bbf7d0;color:#166534}
+.action-approve{background:#4ade80;color:#064e3b}
+
+/* HOME */
+.badge{display:inline-block;padding:6px 12px;border-radius:999px;background:#ddd6fe;color:#4c1d95;font-size:11px;margin-bottom:10px}
+.hero{display:grid;grid-template-columns:1.2fr 1fr;gap:32px;align-items:center}
+.hero-home{margin-top:10px}
+.hero-text h1{font-size:32px;margin-bottom:8px}
+.hero-visual{position:relative}
+.hero-wave{position:absolute;inset:8% -14% -12% 6%;background:linear-gradient(120deg,#a855f7,#6366f1);filter:blur(40px);opacity:.55;border-radius:999px}
+.hero-visual img{position:relative;width:100%;border-radius:22px;box-shadow:0 18px 45px rgba(15,23,42,.35);object-fit:cover}
+.stats{display:flex;gap:26px;margin-top:18px;flex-wrap:wrap;font-size:13px}
+.stat h3{margin:0;font-size:26px;color:var(--primary-dark)}
+.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-top:20px}
+.feature{background:#fff;border-radius:16px;padding:16px;box-shadow:0 8px 20px rgba(15,23,42,.06)}
+
+/* DOCTORS */
+#doctorCards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;margin-top:20px}
+
+/* APPOINTMENT */
+.appointment-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:32px;align-items:flex-start;margin-top:16px}
+.appointment-layout img{width:100%;border-radius:18px;box-shadow:0 18px 40px rgba(15,23,42,.3);object-fit:cover;max-height:380px}
+
+/* LOGIN PAGE CENTER */
+#login{display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:calc(100vh - 80px)}
+#login h2{margin-bottom:10px}
+#login .card{max-width:380px;width:100%}
+
+/* RESPONSIVE */
+@media(max-width:900px){.hero{grid-template-columns:1fr}.appointment-layout{grid-template-columns:1fr}}
+@media(max-width:720px){header{flex-direction:column;align-items:flex-start;gap:6px}.nav-buttons{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="brand">Medi<span>Care+</span></div>
+    <div style="display:flex;flex-direction:column;line-height:1.2;">
+      <div class="userLabel" style="font-size:11px;opacity:.9"></div>
+      <div style="font-size:11px;opacity:.95;">📞 Helpline: 1800-555-220</div>
+    </div>
+  </div>
+  <div class="nav-buttons">
+    <button class="nav-btn" data-page="home" onclick="go('home')">Home</button>
+    <button class="nav-btn" data-page="doctors" onclick="go('doctors')">Doctors</button>
+    <button class="nav-btn" data-page="slots" onclick="go('slots')">Slots</button>
+    <button class="nav-btn" data-page="appointment" onclick="go('appointment')">Appointment</button>
+    <button class="nav-btn" data-page="dashboard" onclick="go('dashboard')">Dashboard</button>
+    <button class="nav-btn" data-page="admin" id="adminBtn" onclick="go('admin')" style="display:none;">Admin</button>
+    <button class="nav-btn" data-page="login" id="loginBtn" onclick="go('login')">Login</button>
+    <button class="nav-btn" data-page="signup" id="signupBtn" onclick="go('signup')">Signup</button>
+    <button class="nav-btn" id="logoutBtn" onclick="logout()" style="display:none;background:#ef4444;">Logout</button>
+  </div>
+</header>
+
+<!-- HOME -->
+<div class="page" id="home">
+  <div class="hero hero-home">
+    <div class="hero-text">
+      <span class="badge">24/7 Hospital Appointment</span>
+      <h1>Book Your Doctor Appointment in Minutes</h1>
+      <p>Choose your specialist, pick a time slot and get a digital token instantly — no waiting in long queues.</p>
+      <button class="btn-primary hero-cta" type="button" onclick="go('slots')">View Slots &amp; Book</button>
+      <div class="stats">
+        <div class="stat"><h3>120+</h3><p>Specialists</p></div>
+        <div class="stat"><h3>25K+</h3><p>Patients Served</p></div>
+        <div class="stat"><h3>4.9★</h3><p>Rating</p></div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-wave"></div>
+      <img src="https://images.pexels.com/photos/6129681/pexels-photo-6129681.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Hospital care" />
+    </div>
+  </div>
+
+  <h2 style="margin-top:35px;">Why Choose MediCare+</h2>
+  <div class="features">
+    <div class="feature"><h3>Skip Queue</h3><p>Arrive only at your scheduled time slot.</p></div>
+    <div class="feature"><h3>Digital Records</h3><p>Your prescriptions &amp; reports remain safe.</p></div>
+    <div class="feature"><h3>Multi-Speciality</h3><p>Cardiology, Neurology, Orthopedics and more.</p></div>
+    <div class="feature"><h3>Smart Reminders</h3><p>Get notified about follow-up visits.</p></div>
+  </div>
+</div>
+
+<!-- DOCTORS -->
+<div class="page hidden" id="doctors">
+  <h2>Our Doctors</h2>
+  <p>Consult experienced specialists.</p>
+  <div id="doctorCards"></div>
+</div>
+
+<!-- SLOTS -->
+<div class="page hidden" id="slots">
+  <h2>Available Slots</h2>
+  <p>Appointment can be booked only through these slots.</p>
+  <div class="card">
+    <h3>Regular Slots</h3>
+    <table>
+      <thead><tr><th>Doctor</th><th>Department</th><th>Upcoming Slots</th></tr></thead>
+      <tbody id="normalSlotsBody"></tbody>
+    </table>
+  </div>
+  <div class="card" id="suddenSection" style="margin-top:16px;display:none;">
+    <h3>Sudden Slots (50% OFF)</h3>
+    <p style="font-size:12px;">Created when a doctor finishes early. Book within 10 minutes &amp; reach within 15 minutes.</p>
+    <table>
+      <thead><tr><th>Doctor</th><th>Dept</th><th>Time</th><th>Book Within</th><th>Action</th></tr></thead>
+      <tbody id="suddenBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- APPOINTMENT -->
+<div class="page hidden" id="appointment">
+  <h2>Book Appointment</h2>
+  <p style="font-size:12px;color:#b91c1c;">You must select a slot from <b>Slots</b> page. Date &amp; time here are fixed by slot and cannot be edited.</p>
+  <div class="appointment-layout">
+    <div class="card">
+      <form id="appointmentForm">
+        <label>Full Name</label>
+        <input id="appName" required />
+        <label>Phone Number</label>
+        <div style="display:flex;gap:6px;">
+          <span style="background:#fff;border:1px solid var(--border);padding:9px 12px;border-radius:10px;font-size:14px;">+91</span>
+          <input id="appPhone" required maxlength="10" placeholder="10-digit number" />
+        </div>
+        <label>Department</label>
+        <select id="appDept" required onchange="onDeptChange()">
+          <option value="">Select</option>
+          <option>Cardiology</option>
+          <option>Orthopedics</option>
+          <option>Neurology</option>
+          <option>Dermatology</option>
+          <option>Pediatrics</option>
+          <option>General Medicine</option>
+        </select>
+        <div id="doctorBlock" class="hidden">
+          <label>Doctor</label>
+          <input id="appDoctor" readonly />
+        </div>
+        <div id="dateTimeBlock" style="margin-top:8px;">
+          <label>Date</label>
+          <input type="date" id="appDate" readonly required />
+          <label style="margin-top:8px;">Time</label>
+          <input type="time" id="appTime" readonly required />
+        </div>
+        <label style="margin-top:8px;">Symptoms / Notes (optional)</label>
+        <textarea id="appMessage"></textarea>
+        <button class="btn-primary" type="submit">Confirm Appointment</button>
+        <div id="appointmentMsg"></div>
+      </form>
+    </div>
+    <div>
+      <img src="https://images.pexels.com/photos/8460035/pexels-photo-8460035.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Doctor consultation" />
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="page hidden" id="dashboard">
+  <h2>Dashboard</h2>
+  <div class="card">
+    <h3>Your Appointments</h3>
+    <p id="noApptsMsg">No appointments found.</p>
+    <table id="apptTable" style="display:none;">
+      <thead>
+        <tr><th>Name</th><th>Phone</th><th>Dept</th><th>Doctor</th><th>Date</th><th>Time</th><th>Status</th><th>Actions</th></tr>
+      </thead>
+      <tbody id="apptBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div class="page hidden" id="login">
+  <h2>Login</h2>
+  <div class="card">
+    <form id="loginForm">
+      <label>Email</label>
+      <input type="email" id="loginEmail" required />
+      <label>Password</label>
+      <input type="password" id="loginPassword" required />
+      <button class="btn-primary" type="submit">Login</button>
+      <div id="loginMsg"></div>
+    </form>
+  </div>
+</div>
+
+<!-- SIGNUP -->
+<div class="page hidden" id="signup">
+  <h2>Signup</h2>
+  <div class="card" style="max-width:420px;margin-inline:auto;">
+    <form id="signupForm">
+      <label>Full Name</label><input id="signupName" required />
+      <label>Email</label><input type="email" id="signupEmail" required />
+      <label>Phone</label><input id="signupPhone" required />
+      <label>Password</label><input type="password" id="signupPassword" required />
+      <button class="btn-primary" type="submit">Create Account</button>
+      <div id="signupMsg"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div class="page hidden" id="admin">
+  <h2>Admin Panel</h2>
+  <div class="card">
+    <h3>All Appointments</h3>
+    <table>
+      <thead>
+        <tr><th>Patient</th><th>Phone</th><th>Dept</th><th>Doctor</th><th>Date</th><th>Time</th><th>Status</th><th>User Email</th><th>Action</th></tr>
+      </thead>
+      <tbody id="adminApptsBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id),
+      LSget=k=>JSON.parse(localStorage.getItem(k)||"[]"),
+      LSset=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const LS_USERS="mc_users",LS_CURRENT="mc_current",LS_APPTS="mc_appts",LS_DRAFT="mc_draft";
+let slotPrefilled=false;
+
+const DOCTORS={
+  Cardiology:"Dr. Arun Kumar",
+  Orthopedics:"Dr. Manoj Singh",
+  Neurology:"Dr. Kavya Nair",
+  Dermatology:"Dr. Priya Menon",
+  Pediatrics:"Dr. Rohan Iyer",
+  "General Medicine":"Dr. Sneha Rao"
+};
+
+/* PASSWORD RULE:
+   - min 8 characters
+   - at least 1 uppercase
+   - at least 1 number
+   - at least 1 special character */
+const validPassword=p=>/^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(p);
+
+const getCurrentUser=()=>{try{return JSON.parse(localStorage.getItem(LS_CURRENT)||"null")}catch{return null}};
+const canEditStatus=s=>["Pending","Arrived (Waiting)"].includes(s)||s?.startsWith("Arrived Early");
+
+/* NAVIGATION */
+function updateHeader(){
+  const u=getCurrentUser();
+  document.querySelector(".userLabel").textContent=u?`Logged in as: ${u.name}`:"Not logged in";
+  const isAdmin=u&&u.email==="admin@hospital.com";
+  $("adminBtn").style.display=isAdmin?"inline-block":"none";
+  $("logoutBtn").style.display=u?"inline-block":"none";
+  $("loginBtn").style.display=u?"none":"inline-block";
+  $("signupBtn").style.display=u?"none":"inline-block";
+}
+function go(page){
+  if(page!=="appointment")slotPrefilled=false;
+  const url=new URL(location);url.searchParams.set("page",page);history.pushState({}, "", url);
+  show(page);
+}
+function show(page){
+  const u=getCurrentUser();
+  if((page==="appointment"||page==="dashboard"||page==="slots")&&!u)page="login";
+  if(page==="admin"&&(!u||u.email!=="admin@hospital.com"))page="home";
+  document.querySelectorAll(".page").forEach(p=>p.classList.add("hidden"));
+  $(page).classList.remove("hidden");
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
+  document.querySelector(`.nav-btn[data-page="${page}"]`)?.classList.add("active");
+  updateHeader();
+  if(page==="doctors")renderDoctors();
+  if(page==="slots"){renderSlots();renderSuddenSlots();}
+  if(page==="appointment")loadDraft();
+  if(page==="dashboard")renderDashboard();
+  if(page==="admin")renderAdmin();
+}
+window.onpopstate=()=>show(new URL(location).searchParams.get("page")||"home");
+
+/* DOCTORS */
+function renderDoctors(){
+  $("doctorCards").innerHTML=Object.entries(DOCTORS).map(([dept,doc])=>`
+    <div class="card">
+      <h3>${doc}</h3>
+      <p><b>Department:</b> ${dept}</p>
+      <p>10+ years • Mon–Sat • 9AM–6PM</p>
+    </div>`).join("");
+}
+
+/* SLOTS */
+function renderSlots(){
+  const body=$("normalSlotsBody"),now=new Date(),base=new Date(now.getTime()+15*60000);
+  body.innerHTML=Object.entries(DOCTORS).map(([dept,doc])=>{
+    const slots=[...Array(5)].map((_,i)=>{
+      const t=new Date(base.getTime()+i*30*60000),
+            time=t.toTimeString().slice(0,5),
+            date=t.toISOString().slice(0,10);
+      return `<button class="action-btn action-approve"
+              onclick="bookNormalSlot('${doc}','${dept}','${time}','${date}')">${time}</button>`;
+    }).join("");
+    return `<tr><td>${doc}</td><td>${dept}</td><td>${slots}</td></tr>`;
+  }).join("");
+}
+function bookNormalSlot(doctor,dept,time,date){
+  slotPrefilled=true;go("appointment");
+  setTimeout(()=>{appDept.value=dept;onDeptChange();appDoctor.value=doctor;appDate.value=date;appTime.value=time;},40);
+}
+
+/* APPOINTMENT FORM */
+function onDeptChange(){
+  const dept=appDept.value;
+  if(!dept){$("doctorBlock").classList.add("hidden");appDoctor.value="";return;}
+  appDoctor.value=DOCTORS[dept]||"";$("doctorBlock").classList.remove("hidden");saveDraft();
+}
+function saveDraft(){
+  const u=getCurrentUser();if(!u)return;
+  LSset(LS_DRAFT,{userEmail:u.email,name:appName.value,phone:appPhone.value,dept:appDept.value,date:appDate.value,time:appTime.value,msg:appMessage.value});
+}
+function loadDraft(){
+  const u=getCurrentUser();if(!u)return;
+  const d=JSON.parse(localStorage.getItem(LS_DRAFT)||"null");if(!d||d.userEmail!==u.email)return;
+  appName.value=d.name||"";appPhone.value=d.phone||"";appDept.value=d.dept||"";if(d.dept)onDeptChange();
+  appDate.value=d.date||"";appTime.value=d.time||"";appMessage.value=d.msg||"";
+}
+function handleAppointment(e){
+  e.preventDefault();
+  const u=getCurrentUser();
+  if(!u){appointmentMsg.innerHTML="<p class='error'>Please login first.</p>";return;}
+  if(!slotPrefilled){appointmentMsg.innerHTML="<p class='error'>Please select a slot from Slots page first.</p>";return;}
+  if(!appDate.value||!appTime.value){appointmentMsg.innerHTML="<p class='error'>Invalid slot. Please select again.</p>";return;}
+  const phone=appPhone.value.trim();if(phone.length!==10||!/^[0-9]+$/.test(phone)){appointmentMsg.innerHTML="<p class='error'>Phone must be 10 digits.</p>";return;}
+  const appts=LSget(LS_APPTS);
+  appts.push({id:Date.now(),userEmail:u.email,name:appName.value,phone:"+91 "+phone,dept:appDept.value,doctor:appDoctor.value,date:appDate.value,time:appTime.value,message:appMessage.value,status:"Pending",type:"Normal"});
+  LSset(LS_APPTS,appts);localStorage.removeItem(LS_DRAFT);slotPrefilled=false;appointmentForm.reset();$("doctorBlock").classList.add("hidden");
+  appointmentMsg.innerHTML="<p class='success'>Appointment booked successfully!</p>";setTimeout(()=>go("dashboard"),900);
+}
+
+/* SUDDEN SLOTS */
+function renderSuddenSlots(){
+  const section=$("suddenSection"),body=$("suddenBody"),now=new Date(),all=LSget(LS_APPTS);
+  const slots=all.filter(a=>a.type==="Sudden"&&a.status==="Sudden Available"&&a.bookingDeadline&&new Date(a.bookingDeadline)>now);
+  if(!slots.length){section.style.display="none";return;}
+  section.style.display="block";
+  body.innerHTML=slots.map(a=>{
+    const mins=Math.max(0,Math.floor((new Date(a.bookingDeadline)-now)/60000));
+    return `<tr><td>${a.doctor}</td><td>${a.dept}</td><td>${a.time}</td><td>${mins} min</td>
+      <td><button class="action-btn action-approve" onclick="bookSudden(${a.id})">Book</button></td></tr>`;
+  }).join("");
+}
+function bookSudden(id){
+  const u=getCurrentUser();if(!u){alert("Please login to book sudden appointment.");go("login");return;}
+  const appts=LSget(LS_APPTS),a=appts.find(x=>x.id===id),now=new Date();if(!a){alert("Slot not found.");return;}
+  if(new Date(a.bookingDeadline)<=now){a.status="Sudden Expired";LSset(LS_APPTS,appts);alert("This sudden slot expired.");renderSuddenSlots();return;}
+  if(a.userEmail){alert("Already booked.");return;}
+  a.userEmail=u.email;a.name=u.name||"Sudden Patient";a.phone=u.phone||"";a.status="Sudden Booked";a.arrived=false;
+  a.arrivalDeadline=new Date(now.getTime()+15*60000).toISOString();
+  LSset(LS_APPTS,appts);alert("Sudden appointment booked! Reach within 15 minutes.");go("dashboard");
+}
+
+/* DASHBOARD */
+function renderDashboard(){
+  const u=getCurrentUser();if(!u)return;
+  const appts=LSget(LS_APPTS).filter(a=>a.userEmail===u.email),body=$("apptBody"),noMsg=$("noApptsMsg"),table=$("apptTable");
+  body.innerHTML="";if(!appts.length){noMsg.style.display="block";table.style.display="none";return;}
+  noMsg.style.display="none";table.style.display="table";
+  body.innerHTML=appts.map(a=>{
+    let actions="";
+    if(canEditStatus(a.status)){
+      actions+=`<button class="action-btn action-edit" onclick="editAppt(${a.id})">Edit</button>`;
+      actions+=`<button class="action-btn action-del" onclick="deleteAppt(${a.id})">Delete</button>`;
+    }
+    actions+=`<button class="action-btn action-print" onclick="printAppt(${a.id})">Print</button>`;
+    if(a.type==="Sudden"&&a.status==="Sudden Booked"&&!a.arrived)
+      actions+=`<button class="action-btn action-approve" onclick="markArrived(${a.id})">I have arrived</button>`;
+    return `<tr><td>${a.name}</td><td>${a.phone}</td><td>${a.dept}</td><td>${a.doctor}</td><td>${a.date}</td><td>${a.time}</td><td>${a.status}</td><td>${actions}</td></tr>`;
+  }).join("");
+}
+function editAppt(id){
+  const u=getCurrentUser(),appts=LSget(LS_APPTS),a=appts.find(x=>x.id===id&&x.userEmail===u.email);
+  if(!a){alert("Not found");return;}
+  if(!canEditStatus(a.status)){alert("Cannot edit after admin approval.");return;}
+  slotPrefilled=true;
+  appName.value=a.name;appPhone.value=a.phone.replace("+91 ","");appDept.value=a.dept;onDeptChange();
+  appDoctor.value=a.doctor;appDate.value=a.date;appTime.value=a.time;appMessage.value=a.message||"";
+  go("appointment");
+}
+function deleteAppt(id){
+  if(!confirm("Delete this appointment?"))return;
+  const u=getCurrentUser();let appts=LSget(LS_APPTS).filter(a=>!(a.id===id&&a.userEmail===u.email));
+  LSset(LS_APPTS,appts);renderDashboard();
+}
+function markArrived(id){
+  const u=getCurrentUser(),appts=LSget(LS_APPTS),a=appts.find(x=>x.id===id&&x.userEmail===u.email);
+  if(!a){alert("Not found");return;}
+  a.arrived=true;a.status="Arrived (Waiting)";LSset(LS_APPTS,appts);renderDashboard();
+}
+function printAppt(id){
+  const u=getCurrentUser(),a=LSget(LS_APPTS).find(x=>x.id===id&&x.userEmail===u.email);
+  if(!a){alert("Not found");return;}
+  const w=window.open("","","width=420,height=600");
+  w.document.write(`<h2>MEDICARE+ APPOINTMENT TOKEN</h2>
+  <p><b>Name:</b> ${a.name}</p><p><b>Phone:</b> ${a.phone}</p><p><b>Department:</b> ${a.dept}</p>
+  <p><b>Doctor:</b> ${a.doctor}</p><p><b>Date:</b> ${a.date}</p><p><b>Time:</b> ${a.time}</p>
+  <p><b>Status:</b> ${a.status}</p><p><b>Token ID:</b> ${a.id}</p>`);w.print();
+}
+/* ADMIN PANEL */
+function renderAdmin(){
+  const u=getCurrentUser();if(!u||u.email!=="admin@hospital.com"){go("home");return;}
+  const appts=LSget(LS_APPTS),body=$("adminApptsBody");
+  body.innerHTML=appts.map(a=>{
+    let act=`<button class='action-btn action-edit' onclick='adminMarkArrived(${a.id})'>Arrived</button>`;
+    if(a.status==="Pending"||a.status==="Sudden Booked")
+      act+=`<button class='action-btn action-approve' onclick='approveAppt(${a.id})'>Approve</button>`;
+    if(a.status==="Approved"||a.status==="Arrived (On time)"||a.status?.startsWith("Arrived Early"))
+      act+=`<button class='action-btn action-print' onclick='completeAppointment(${a.id})'>Complete</button>`;
+    return `<tr><td>${a.name}</td><td>${a.phone}</td><td>${a.dept}</td><td>${a.doctor}</td><td>${a.date}</td><td>${a.time}</td><td>${a.status}</td><td>${a.userEmail||""}</td><td>${act}</td></tr>`;
+  }).join("");
+}
+function approveAppt(id){
+  const appts=LSget(LS_APPTS),a=appts.find(x=>x.id===id);if(!a)return;
+  a.status="Approved";LSset(LS_APPTS,appts);renderAdmin();
+}
+function adminMarkArrived(id){
+  const appts=LSget(LS_APPTS),a=appts.find(x=>x.id===id);if(!a)return;
+  const now=new Date(),sch=new Date(a.date+"T"+a.time),diffMin=Math.floor((now-sch)/60000);
+  if(diffMin<-1)a.status=`Arrived Early (${Math.abs(diffMin)} min)`;
+  else if(diffMin<=10)a.status="Arrived (On time)";
+  else a.status=`Late (${diffMin} min) - reschedule`;
+  LSset(LS_APPTS,appts);renderAdmin();
+}
+function completeAppointment(id){
+  const appts=LSget(LS_APPTS),a=appts.find(x=>x.id===id);if(!a)return;
+  a.status="Completed";const now=new Date();
+  const same=appts.filter(b=>b.id!==a.id&&b.doctor===a.doctor&&b.date===a.date&&b.status!=="Completed")
+                  .sort((x,y)=>new Date(x.date+"T"+x.time)-new Date(y.date+"T"+y.time));
+  if(!same.length){LSset(LS_APPTS,appts);renderAdmin();return;}
+  const next=same.find(x=>new Date(x.date+"T"+x.time)>now);if(!next){LSset(LS_APPTS,appts);renderAdmin();return;}
+  const nextStart=new Date(next.date+"T"+next.time),freeMin=Math.floor((nextStart-now)/60000);
+  if(freeMin<20){LSset(LS_APPTS,appts);renderAdmin();return;}
+  const suddenStart=new Date(now.getTime()+10*60000);if(suddenStart>=nextStart){LSset(LS_APPTS,appts);renderAdmin();return;}
+  appts.push({id:Date.now()+Math.floor(Math.random()*1000),userEmail:null,name:"Sudden Slot",phone:"",
+    dept:a.dept,doctor:a.doctor,date:a.date,time:suddenStart.toTimeString().slice(0,5),
+    message:"Sudden appointment (50% discount)",status:"Sudden Available",type:"Sudden",
+    bookingDeadline:new Date(now.getTime()+10*60000).toISOString(),arrivalDeadline:null,arrived:false});
+  LSset(LS_APPTS,appts);renderAdmin();alert("Sudden slot created for "+a.doctor);
+}
+
+/* SUDDEN EXPIRY */
+function checkSuddenExpiry(){
+  const appts=LSget(LS_APPTS);let changed=false;const now=new Date();
+  appts.forEach(a=>{
+    if(a.type==="Sudden"){
+      if(a.status==="Sudden Available"&&a.bookingDeadline&&new Date(a.bookingDeadline)<=now){a.status="Sudden Expired";changed=true;}
+      if(a.status==="Sudden Booked"&&a.arrivalDeadline&&!a.arrived&&new Date(a.arrivalDeadline)<=now){a.status="Cancelled (No show)";changed=true;}
+    }
+  });
+  if(changed)LSset(LS_APPTS,appts);
+}
+
+/* AUTH */
+function handleSignup(e){
+  e.preventDefault();
+  const users=LSget(LS_USERS);
+  if(users.find(u=>u.email===signupEmail.value)){
+    signupMsg.innerHTML="<p class='error'>Email already registered.</p>";return;
+  }
+  if(!validPassword(signupPassword.value)){
+    signupMsg.innerHTML="<p class='error'>Password must be 8+ chars with 1 capital, 1 number & 1 special character.</p>";return;
+  }
+  users.push({name:signupName.value,email:signupEmail.value,phone:signupPhone.value,password:signupPassword.value});
+  LSset(LS_USERS,users);
+  signupMsg.innerHTML="<p class='success'>Signup successful!</p>";
+  setTimeout(()=>go("login"),800);
+}
+function handleLogin(e){
+  e.preventDefault();
+  if(!validPassword(loginPassword.value)){
+    loginMsg.innerHTML="<p class='error'>Password must be 8+ chars with 1 capital, 1 number & 1 special character.</p>";return;
+  }
+  let users=LSget(LS_USERS),
+      u=users.find(x=>x.email===loginEmail.value&&x.password===loginPassword.value);
+
+  // Hidden admin login (NOT shown in UI)
+  if(!u && loginEmail.value==="admin@hospital.com" && loginPassword.value==="Admin@27"){
+    u={name:"Admin",email:"admin@hospital.com",phone:"",password:"Admin@27"};
+  }
+
+  if(!u){loginMsg.innerHTML="<p class='error'>Invalid login.</p>";return;}
+  localStorage.setItem(LS_CURRENT,JSON.stringify(u));go("dashboard");
+}
+function logout(){
+  localStorage.removeItem(LS_CURRENT);localStorage.removeItem(LS_DRAFT);slotPrefilled=false;go("login");
+}
+
+/* INTERVALS + INIT */
+setInterval(()=>{const p=new URL(location).searchParams.get("page")||"home";if(p==="appointment"&&getCurrentUser())saveDraft();},1000);
+setInterval(checkSuddenExpiry,15000);
+
+window.onload=()=>{
+  updateHeader();
+  const page=new URL(location).searchParams.get("page")||"home";show(page);
+  appointmentForm?.addEventListener("submit",handleAppointment);
+  loginForm?.addEventListener("submit",handleLogin);
+  signupForm?.addEventListener("submit",handleSignup);
+};
+</script>
+
+</body>
+</html>
+
+
